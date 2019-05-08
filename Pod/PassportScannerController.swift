@@ -84,7 +84,7 @@ open class PassportScannerController: UIViewController, MGTesseractDelegate {
     var pictureOutput = PictureOutput()
     
     /// The tesseract OCX engine
-    var tesseract: MGTesseract = MGTesseract(language: "eng")
+    var tesseract: MGTesseract? = MGTesseract(language: "eng")
     
     /**
      Rotation is not needed.
@@ -186,22 +186,22 @@ open class PassportScannerController: UIViewController, MGTesseractDelegate {
         // optimisations created based on https://github.com/gali8/Tesseract-OCR-iOS/wiki/Tips-for-Improving-OCR-Results
         
         // tesseract OCR settings
-        self.tesseract.setVariableValue("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ<", forKey: "tessedit_char_whitelist")
-        self.tesseract.delegate = self
+        self.tesseract?.setVariableValue("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ<", forKey: "tessedit_char_whitelist")
+        self.tesseract?.delegate = self
         
-        self.tesseract.rect = CGRect(x: 0, y: 0, width: ocrParsingRect.size.height / 2, height: ocrParsingRect.size.width / 2)
+        self.tesseract?.rect = CGRect(x: 0, y: 0, width: ocrParsingRect.size.height / 2, height: ocrParsingRect.size.width / 2)
         
         // see http://www.sk-spell.sk.cx/tesseract-ocr-en-variables
-        self.tesseract.setVariableValue("1", forKey: "tessedit_serial_unlv")
-        self.tesseract.setVariableValue("FALSE", forKey: "x_ht_quality_check")
-        self.tesseract.setVariableValue("FALSE", forKey: "load_system_dawg")
-        self.tesseract.setVariableValue("FALSE", forKey: "load_freq_dawg")
-        self.tesseract.setVariableValue("FALSE", forKey: "load_unambig_dawg")
-        self.tesseract.setVariableValue("FALSE", forKey: "load_punc_dawg")
-        self.tesseract.setVariableValue("FALSE", forKey: "load_number_dawg")
-        self.tesseract.setVariableValue("FALSE", forKey: "load_fixed_length_dawgs")
-        self.tesseract.setVariableValue("FALSE", forKey: "load_bigram_dawg")
-        self.tesseract.setVariableValue("FALSE", forKey: "wordrec_enable_assoc")
+        self.tesseract?.setVariableValue("1", forKey: "tessedit_serial_unlv")
+        self.tesseract?.setVariableValue("FALSE", forKey: "x_ht_quality_check")
+        self.tesseract?.setVariableValue("FALSE", forKey: "load_system_dawg")
+        self.tesseract?.setVariableValue("FALSE", forKey: "load_freq_dawg")
+        self.tesseract?.setVariableValue("FALSE", forKey: "load_unambig_dawg")
+        self.tesseract?.setVariableValue("FALSE", forKey: "load_punc_dawg")
+        self.tesseract?.setVariableValue("FALSE", forKey: "load_number_dawg")
+        self.tesseract?.setVariableValue("FALSE", forKey: "load_fixed_length_dawgs")
+        self.tesseract?.setVariableValue("FALSE", forKey: "load_bigram_dawg")
+        self.tesseract?.setVariableValue("FALSE", forKey: "wordrec_enable_assoc")
     }
     
     open override func viewDidAppear(_ animated: Bool) {
@@ -321,7 +321,7 @@ open class PassportScannerController: UIViewController, MGTesseractDelegate {
         
         crop.cropSizeInPixels = Size(width: Float(ocrParsingRect.size.width), height: Float(ocrParsingRect.size.height))
         crop.locationOfCropInPixels = Position(Float(ocrParsingRect.origin.x), Float(ocrParsingRect.origin.y), nil)
-        self.tesseract.rect = CGRect(x: 0, y: 0, width: ocrParsingRect.size.height / 2, height: ocrParsingRect.size.width / 2)
+        self.tesseract?.rect = CGRect(x: 0, y: 0, width: ocrParsingRect.size.height / 2, height: ocrParsingRect.size.width / 2)
         
     }
     
@@ -369,6 +369,7 @@ open class PassportScannerController: UIViewController, MGTesseractDelegate {
     @objc public func stopScan() {
         self.view.backgroundColor = UIColor.white
         camera.stopCapture()
+        tesseract = nil
         abortScan()
     }
     
@@ -472,11 +473,11 @@ open class PassportScannerController: UIViewController, MGTesseractDelegate {
     open func doOCR(image: UIImage) -> String {
         // Start OCR
         var result: String?
-        self.tesseract.image = image
+        self.tesseract?.image = image
         
         print("- Start recognize")
-        self.tesseract.recognize()
-        result = self.tesseract.recognizedText
+        self.tesseract?.recognize()
+        result = self.tesseract?.recognizedText
         //tesseract = nil
         MGTesseract.clearCache()
         print("Scan result : \(result ?? "")")
@@ -505,6 +506,11 @@ open class PassportScannerController: UIViewController, MGTesseractDelegate {
         }else{
             assertionFailure("You should overwrite this function to handle an abort")
         }
+    }
+    
+    open override func viewWillDisappear(_ animated: Bool) {
+        tesseract = nil
+        super.viewWillDisappear(animated)
     }
 }
 
